@@ -60,12 +60,29 @@
           {:vists (str "You've accessed this page " count "times")})
         (assoc :session session)))))
 
-  
+(defn counter-middleware [app]
+  (fn [request]
+    (let [{session :session} request]
+      (let [visits (:visits session 0)
+            session (assoc session :visits (int visits))]
+        (-> (response
+              {:visits (str "You've accessed this page " visits "times.")})
+            (assoc :session session))))))
+                           
+
+(defn logging-middleware [app] 
+  (fn [request]
+    (let [{:keys [session cookies]} request]
+      (prn (str "Session: " session))
+      (prn (str "Cookies: " cookies))
+      (prn (str "Request: " request)))
+    (app request)))
+
 (defroutes main-routes
   (GET "/" request (index request))
   (POST "/signin" request (signin request))
   (GET "/signout" request (signout request))
-  (route/resources "/")
+  (route/resources "/info")
   (route/not-found (json-error 404 "Page not found")))
 
 (defn json-api
@@ -75,7 +92,8 @@
       wrap-cookies
       json/wrap-json-params
       json/wrap-json-body
-      json/wrap-json-response))
+      json/wrap-json-response
+      logging-middleware))
 
 (def app
   (->
