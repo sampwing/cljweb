@@ -33,21 +33,7 @@
     (if (nil? user-info)
       false
       (let [{user-password :password} user-info]
-        (if (= user-password password)
-          true
-          false)))))
-
-(defn signin
-  [request] 
-  (let [{query-params :query-params} request]
-    (prn query-params)
-    (let [{username "username" password "password"} query-params]
-      (prn username password)
-      (if (true? (authenticate-user username password))
-        (response {:status 200
-                   :username username})
-        (response {:status 401
-                   :error "unauthenticated"})))))
+        (= user-password password)))))
 
 (defn signout
   [request]
@@ -56,46 +42,34 @@
 
 (defn index 
   [request]
-  (prn request)
   (let [{:keys [session cookies query-params]} request]
+  (prn request)
+  (prn session)
+  (prn cookies)
   (prn query-params)
   (let [count (:count session 0)
         session (assoc session :count (inc count))]
     (-> (response 
-          {:vists (str "You've accessed this page " count "times")})
+        {:vists (str "You've accessed this page " count "times")
+         :session session})
         (assoc :session session)))))
-
-(defn counter-middleware [app]
-  (fn [request]
-    (let [{session :session} request]
-      (let [visits (:visits session 0)
-            session (assoc session :visits (int visits))]
-        (-> (response
-              {:visits (str "You've accessed this page " visits "times.")})
-            (assoc :session session))))))
-                           
 
 (defn logging-middleware [app] 
   (fn [request]
     (let [{:keys [session cookies query-params]} request]
-      (prn (str "Session: " session))
-      (prn (str "Cookies: " cookies))
-      (prn (str "Request: " request))
-      (prn (str "QParams: " query-params)))
-    (app request)))
+    (app request))))
 
 (defn auth
   [username password]
   (let [authenticated (authenticate-user username password)]
-  (prn authenticated)
   (if (true? authenticated)
-    (response {:status 200})
+    (response {:status 200
+               :session {:username username}})
     (response {:status 401}))))
 
 (defroutes main-routes
   (GET "/" request (index request))
-  (POST "/signin" request (signin request))
-  (POST "/signin2" [username password] (auth username password))
+  (POST "/signin" [username password] (auth username password))
   (GET "/signout" request (signout request))
   (route/resources "/info")
   (route/not-found (json-error 404 "Page not found")))
@@ -108,7 +82,6 @@
       json/wrap-json-params
       json/wrap-json-body
       json/wrap-json-response))
-
 
 (def app
   (->
