@@ -10,8 +10,6 @@
 (require '[compojure.route :as route])
 (require '[compojure.handler :as handler])
 
-"https://github.com/ring-clojure/ring/wiki/Getting-Started"
-
 (defn handler [request]
   (prn request)
   {:status 200
@@ -24,7 +22,7 @@
     {:status error-status
      :body message}))
 
-(def users {"swing" {:password "water"}
+(def users {"swing" {:password "123"}
             "nobody" {:password "nobody"}})
 
 (defn authenticate-user
@@ -34,6 +32,14 @@
       false
       (let [{user-password :password} user-info]
         (= user-password password)))))
+
+(defn signin 
+  [{{:keys [username password]} :params :as request}]
+  (let [authenticated (authenticate-user username password)]
+    (if (true? authenticated)
+      (-> (response {:status 200 :session})
+          (assoc :session :username username)
+      (response {:status 401})))))
 
 (defn signout
   [request]
@@ -59,19 +65,13 @@
     (let [{:keys [session cookies query-params]} request]
     (app request))))
 
-(defn auth
-  [username password]
-  (let [authenticated (authenticate-user username password)]
-  (if (true? authenticated)
-    (response {:status 200
-               :session {:username username}})
-    (response {:status 401}))))
-
 (defroutes main-routes
   (GET "/" request (index request))
-  (POST "/signin" [username password] (auth username password))
+  (POST "/signin" request (signin request))
   (GET "/signout" request (signout request))
-  (route/resources "/info")
+  (route/resources "/")
+  (route/resources "/signin")
+  (route/resources "/signout")
   (route/not-found (json-error 404 "Page not found")))
 
 (defn json-api
