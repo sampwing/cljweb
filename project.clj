@@ -13,4 +13,4 @@
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all}}
   :plugins [[lein-ring "0.7.1"]]
-  :ring {:handler web.routes/app})
+  :ring {:handler web.core/app})
