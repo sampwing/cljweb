@@ -8,7 +8,9 @@
                  [ring/ring-core "1.3.1"]
                  [ring/ring-json "0.3.1"]
                  [ring/ring-jetty-adapter "1.3.0"]
-                 [compojure "1.1.9"]]
+                 [compojure "1.1.9"]
+                 [korma "0.3.0"]
+                 [org.xerial/sqlite-jdbc "3.7.15-M1"]]
   :main ^:skip-aot web.core
   :target-path "target/%s"
   :profiles {:uberjar {:aot :all}}

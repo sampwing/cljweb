@@ -1,0 +1,12 @@
+drop table if exists users;
+
+create table users (
+	id int not null default 0, 
+	username varchar(32) not null default '',
+	password varchar(32) not null default ''
+);
+
+insert into users(id, username, password) values
+(0, 'swing', 'water'),
+(1, 'nobody', 'nobody');
+

@@ -2,6 +2,7 @@
   (:gen-class))
 
 (use '[ring.util.response :only [response]])
+(require '[web.model :as model])
 
 (defn handler [request]
   (prn request)
@@ -38,14 +39,15 @@
         (-> (response
              {:session session})))))))
 
-(defn authenticate-user
+(comment (defn authenticate-user
   [username password]
   (let [user-info (get users username)]
     (if (nil? user-info)
       false
       (let [{user-password :password} user-info]
-        (= user-password password)))))
+        (= user-password password))))))
 
+(comment
 (defn signin
   [{session :session {:keys [username password]} :params :as request}]
   (let [session (assoc session :username username)]
@@ -53,6 +55,21 @@
       (response {:status 200
                  :visits (str "You've accessed this page " (:count session))})
       (response {:status 401}))))
+)
+
+(defn signin
+  [{session :session {:keys [username password]} :params}]
+    (let [user (model/user-authenticate {:username username :password password})]
+      (if (nil? user)
+        (-> (response {:status 401})
+            (assoc :session nil))
+        (let [session (assoc session :user user)]
+          (-> (response {:status 200})
+              (assoc :session session))))))
+(comment
+(defn signin
+  [& args])
+)
 
 (defn signout
   [request]
