@@ -12,7 +12,7 @@
 
 (defentity users)
 
-(defn user-authenticate
+(defn validate-user-credentials
   [{:keys [username password]}]
     (let [users-found (select users
                               (where {:username username
